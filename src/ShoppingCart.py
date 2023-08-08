@@ -40,8 +40,17 @@ class Product:
         return False
 
 
-class Discount:
-    pass
+class Discount():
+    def __init__(self):
+        self.__codes = {
+            'PROMO_5': 5,
+            'PROMO_10': 10
+        }
+    
+    def get_discount(self, code: str) -> float:
+        if code not in self.__codes:
+            raise ValueError(f'Code {code} is not valid')
+        return self.__codes[code]
 
 
 @attr.define
@@ -61,10 +70,17 @@ class ShoppingCart:
         self.__shopping_cart_list.total_cost += item.calculate_total_cost()
 
     def delete_item(self, item: Product):
-        pass
+        for product in self.__shopping_cart_list.products:
+            if product.check_if_product_is_the_same(item):
+                self.__shopping_cart_list.total_products -= item.quantity
+                self.__shopping_cart_list.total_cost -= item.calculate_total_cost()
+                self.__shopping_cart_list.products.remove(product)
 
-    def apply_discount(self, discount: Discount):
-        pass
+    def apply_discount(self, discount: str):
+        discount = Discount().get_discount(discount)
+        self.__shopping_cart_list.total_cost = \
+            float(decimal.Decimal(self.__shopping_cart_list.total_cost * (1 - discount / 100)).quantize(
+                decimal.Decimal('0.00'), rounding=decimal.ROUND_UP))
 
     def get_shopping_cart(self) -> ShoppingCartList:
         return self.__shopping_cart_list
